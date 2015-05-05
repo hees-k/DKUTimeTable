@@ -50,19 +50,16 @@ public class Parse {
 
         // ============ Step1 ==================
         // param set
-        HttpPost httpPost = new HttpPost("http://sso.dankook.ac.kr/sso/pmi-sso-login-uid-password2.html");
+        HttpPost httpPost = new HttpPost("https://webinfo.dankook.ac.kr/member/logon.do");
 
         List<NameValuePair> qparams = new ArrayList<NameValuePair>();
-        qparams.add(new BasicNameValuePair("uid", schoolNumber)); // 32081926,
-                                                                  // 32081929,
-                                                                  // 32091956
+        qparams.add(new BasicNameValuePair("username", schoolNumber));
         qparams.add(new BasicNameValuePair("password", password));
-        qparams.add(new BasicNameValuePair("gid", "info"));
-        qparams.add(new BasicNameValuePair("returl", "http://daninfo.dankook.ac.kr/sso/login.aspx"));
+        qparams.add(new BasicNameValuePair("sso", "ok"));
+        qparams.add(new BasicNameValuePair("returnurl", "http://daninfo.dankook.ac.kr/common/ssoredirect.aspx?url=/hagsa/hla/hla_confirm.asp"));
 
         UrlEncodedFormEntity entity = new UrlEncodedFormEntity(qparams, "UTF-8");
-        httpPost.setEntity(entity);
-
+	httpPost.setEntity(entity);
 
         // ============ Step2 ==================
         // login check
@@ -70,15 +67,16 @@ public class Parse {
         InputStream loginStream = response.getEntity().getContent();
         try {
             String loginHtml = writeHtml(loginStream);
+
             if (!loginCheck(loginHtml))
                 throw new IOException("로그인 실패");
+
         } finally {
             loginStream.close();
         }
 
-        
         // ============ Step3 ==================
-        // parsing        
+        // parsing
         // 강의 시간표 : http://daninfo.dankook.ac.kr/hagsa/hla/hla_sigan.asp
         // 수강확인서 출력 : http://daninfo.dankook.ac.kr/hagsa/hla/hla_confirm.asp
         HttpGet httpGet = new HttpGet("http://daninfo.dankook.ac.kr/hagsa/hla/hla_confirm.asp");
@@ -87,12 +85,12 @@ public class Parse {
         InputStream in = response.getEntity().getContent();
         try {
             String html = writeHtml(in);
-            
+
             return parseJericho(html, context);
         } finally {
             in.close();
-        }        
-        
+        }
+
     }
 
     private static String writeHtml(InputStream in) throws IOException {
