@@ -1,5 +1,6 @@
 package dk.too.timetable;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.regex.Matcher;
@@ -236,8 +237,15 @@ public class DKClass {
             }
 
             partials[i] = new PartialTime(lecture, dayOfWeek, classHour, chs.length, room);
-
         }
+        
+        Arrays.sort(partials, new Comparator<PartialTime>() {
+
+            @Override
+            public int compare(PartialTime lhs, PartialTime rhs) {
+                return lhs.getHour() > rhs.getHour()? 1:-1;
+            }
+        });
 
         return partials;
     }

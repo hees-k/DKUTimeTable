@@ -1,5 +1,7 @@
 package dk.too.util;
 
+import dk.too.timetable.App;
+import android.content.Context;
 import android.os.Environment;
 
 public class Util {
@@ -15,6 +17,11 @@ public class Util {
         else{
             return null;
         }
+    }
+
+    public static String getLocalDir(){
+        Context context = App.get().getApplicationContext();
+        return context.getFilesDir().toString();
     }
     
     public static String arrToStr(String[] array, String delimiter) {

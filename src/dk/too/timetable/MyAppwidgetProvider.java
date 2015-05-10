@@ -1,5 +1,9 @@
 package dk.too.timetable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import android.app.AlarmManager;
@@ -115,18 +119,31 @@ public class MyAppwidgetProvider extends AppWidgetProvider {
         // 오늘 현재 시간 이후의 수업만
         List<DKClass> list = db.DBselect();
 
+        List<PartialTime> showList = new ArrayList<PartialTime>(); 
         for (DKClass dkClass : list) {
 
             PartialTime[] partials = dkClass.getPartialTime();
+
             for (int i = 0; i < partials.length; i++) {
                 
                 if(partials[i].getHour() == -1) continue;
 
                 if (partials[i].isShowWidget()) {
-                    buf.append(partials[i].getTimeStr(context) + " " + partials[i].getLecture() + " ("
-                            + partials[i].getRoom() + ")\n");
+                    showList.add(partials[i]);
                 }
             }
+        }
+
+        Collections.sort(showList, new Comparator<PartialTime>() {
+            @Override
+            public int compare(PartialTime lhs, PartialTime rhs) {
+                return lhs.getHour() - rhs.getHour();
+            }
+        });
+
+        for (PartialTime partialTime : showList) {
+          buf.append(partialTime.getTimeStr(context) + " " + partialTime.getLecture() + " ("
+          + partialTime.getRoom() + ")\n");
         }
 
         if (buf.length() == 0)

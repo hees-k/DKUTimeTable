@@ -95,9 +95,14 @@ public class Parse {
 
     private static String writeHtml(InputStream in) throws IOException {
 
-        String htmlPath = Util.getExtPath() + "/tmp/dku_tt.html";
+        String filePath = Util.getExtPath();
+        if(filePath == null) {
+            // emulator
+            filePath = Util.getLocalDir();
+        }
+        String htmlPath = filePath + "/tmp/dku_tt.html";
 
-        new File(Util.getExtPath() + "/tmp/").mkdirs();
+        new File(filePath + "/tmp/").mkdirs();
         new File(htmlPath).delete();
 
         FileOutputStream out = new FileOutputStream(htmlPath, false);

@@ -21,6 +21,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.GridLayout;
@@ -35,11 +36,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import dk.too.timetable.DKClass.PartialTime;
+import dk.too.timetable.view.AutoFitTextView;
 import dk.too.util.Util;
 
 public class MyTimeTable extends Activity {
@@ -57,12 +60,48 @@ public class MyTimeTable extends Activity {
 
     private ScrollView scroll;
     private GridLayout grid;
+    
+    private int cellWidth;
+    private int cellHeight;
+
+    private int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+    public int getActionBarHeight() {
+        int actionBarHeight = 0;
+        TypedValue tv = new TypedValue();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv,
+                    true))
+                actionBarHeight = TypedValue.complexToDimensionPixelSize(
+                        tv.data, getResources().getDisplayMetrics());
+        } else {
+            actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,
+                    getResources().getDisplayMetrics());
+        }
+        return actionBarHeight;
+    }
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        int height = metrics.heightPixels - getStatusBarHeight() - getActionBarHeight();
+        int width = metrics.widthPixels;
+        
+        cellWidth = width / 6;
+        cellHeight = height / 20;
 
         scroll = (ScrollView) findViewById(R.id.scroll);
         grid = (GridLayout) findViewById(R.id.grid);
@@ -75,7 +114,7 @@ public class MyTimeTable extends Activity {
 
     }
 
-    private int cellWidth;
+
 
     private int YELLOW1 = 0xFFFFEF7F;
     private int YELLOW2 = 0xFFFFEFAF;
@@ -83,11 +122,6 @@ public class MyTimeTable extends Activity {
     private void initGrid() {
 
         grid.removeAllViews();
-
-        DisplayMetrics metrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(metrics);
-
-        cellWidth = metrics.widthPixels / 6;
 
         makeAndAddView("/", cellWidth - 1, YELLOW1, 0, 0);
         makeAndAddView("월", cellWidth - 3, YELLOW1, 0, 1);
@@ -114,11 +148,11 @@ public class MyTimeTable extends Activity {
     }
 
     private void makeAndAddView(String txt, int cellWidth, int color, int row, int col) {
-        TextView tv = new TextView(this);
+        AutoFitTextView tv = new AutoFitTextView(this);
         tv.setText(txt);
         tv.setTextColor(Color.BLACK);
         tv.setBackgroundColor(color);
-        tv.setHeight(55);
+        tv.setHeight(cellHeight);
         tv.setWidth(cellWidth);
         tv.setGravity(Gravity.CENTER);
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
@@ -179,7 +213,7 @@ public class MyTimeTable extends Activity {
         layparam.rowSpec = GridLayout.spec(row, rowSpan);
         layparam.setGravity(Gravity.FILL);
         layparam.setMargins(1, 1, 1, 1);
-        layparam.height = 55;
+        layparam.height = cellHeight;
         layparam.width = cellWidth - 3;
 
         v.setLayoutParams(layparam);
@@ -224,7 +258,7 @@ public class MyTimeTable extends Activity {
                 int timeLen = partials[i].getTimeLength();
                 String room = partials[i].getRoom();
 
-                if(startHour == -1) continue;
+                if(startHour == -1 || col < 1 || col > 5) continue;
                 makeAndAddView(code, lecture, room, startHour, col, timeLen);
             }
 
