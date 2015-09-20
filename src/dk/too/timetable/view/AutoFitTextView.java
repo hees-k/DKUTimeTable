@@ -1,10 +1,10 @@
 package dk.too.timetable.view;
 
-import dk.too.timetable.R;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.widget.TextView;
+import dk.too.timetable.R;
 
 public class AutoFitTextView extends TextView {
 

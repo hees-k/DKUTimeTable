@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <dimen name="widget_text_size">12sp</dimen>
     <dimen name="max_text_size">30px</dimen>
     <dimen name="min_text_size">25px</dimen>
 

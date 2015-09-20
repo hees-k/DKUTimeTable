@@ -1,8 +1,8 @@
 package dk.too.util;
 
-import dk.too.timetable.App;
 import android.content.Context;
 import android.os.Environment;
+import dk.too.timetable.App;
 
 public class Util {
 

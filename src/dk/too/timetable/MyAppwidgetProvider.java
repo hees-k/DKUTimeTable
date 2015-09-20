@@ -1,11 +1,5 @@
 package dk.too.timetable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
@@ -14,9 +8,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.RemoteViews;
-import dk.too.timetable.DKClass.PartialTime;
 
 /**
  * TODO 바탕화면 위젯을 눌러 실행 할 경우, 액티비티가 하나 더 생기는 현상 수정할 것.
@@ -25,20 +19,16 @@ public class MyAppwidgetProvider extends AppWidgetProvider {
 
     static final String SHOW_INFO = "SHOW_INFO";
     static final String UPDATE_WIDGET = "dk.too.timetable.MyAppwidgetProvider.UPDATE_WIDGET";
-    private static MyDB db;
 
     @Override
     public void onEnabled(Context context) {
         super.onEnabled(context);
 
         PackageManager pm = context.getPackageManager();
-        pm.setComponentEnabledSetting(new ComponentName("dk.too.timetable", ".MyAppwidgetProvider"),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-
-        if (db == null) {
-            db = new MyDB(context);
-            db.open();
-        }
+        pm.setComponentEnabledSetting(new ComponentName("dk.too.timetable",
+                ".MyAppwidgetProvider"),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
 
         String amService = Context.ALARM_SERVICE;
         AlarmManager am = (AlarmManager) context.getSystemService(amService);
@@ -55,13 +45,10 @@ public class MyAppwidgetProvider extends AppWidgetProvider {
         super.onDisabled(context);
 
         PackageManager pm = context.getPackageManager();
-        pm.setComponentEnabledSetting(new ComponentName("dk.too.timetable", ".MyAppwidgetProvider"),
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
-
-        if (db != null) {
-            db.close();
-            db = null;
-        }
+        pm.setComponentEnabledSetting(new ComponentName("dk.too.timetable",
+                ".MyAppwidgetProvider"),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
 
         String amService = Context.ALARM_SERVICE;
         AlarmManager am = (AlarmManager) context.getSystemService(amService);
@@ -71,93 +58,68 @@ public class MyAppwidgetProvider extends AppWidgetProvider {
     }
 
     /* 위젯을 2개 이상 추가할 경우와 위젯 갱신 후 호출됨 */
-    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager,
+            int[] appWidgetIds) {
+
+        for (int i = 0; i < appWidgetIds.length; i++) {
+            Log.d(Debug.D + "MyAppwidgetProvider", "onUpdate " + i);
+
+            update(context, appWidgetIds[i], appWidgetManager);
+        }
+
         super.onUpdate(context, appWidgetManager, appWidgetIds);
-        Log.d(Debug.D + "MyAppwidgetProvider", "onUpdate");
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        Log.d(Debug.D + "MyAppwidgetProvider", "onReceive " + intent.getAction());
+        Log.d(Debug.D + "MyAppwidgetProvider",
+                "onReceive " + intent.getAction());
 
         // 10분마다 불린다.
         if (UPDATE_WIDGET.equals(intent.getAction())) {
 
-            update(context);
+            AppWidgetManager man = AppWidgetManager.getInstance(context);
+            int[] ids = man.getAppWidgetIds(new ComponentName(context,
+                    MyAppwidgetProvider.class));
+
+            for (int appWidgetId : ids) {
+                update(context, appWidgetId, man);
+            }
         }
     }
 
-    private void update(Context context) {
+    private void update(Context context, int appWidgetId,
+            AppWidgetManager appWidgetManager) {
 
-        Log.d(Debug.D + "MyAppwidgetProvider", "update ");
-        if (db == null) {
-            db = new MyDB(context);
-            db.open();
-        }
+        Intent intent = new Intent(context, TimeTableWidgetService.class);
+        // Add the app widget ID to the intent extras.
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+        // Instantiate the RemoteViews object for the app widget layout.
+        RemoteViews rv = new RemoteViews(context.getPackageName(),
+                R.layout.widget_layout);
+        // Set up the RemoteViews object to use a RemoteViews adapter.
+        // This adapter connects
+        // to a RemoteViewsService through the specified intent.
+        // This is how you populate the data.
+        rv.setRemoteAdapter(appWidgetId, R.id.list_view, intent);
 
-        String str = makeStr(context);
+        // The empty view is displayed when the collection has no items.
+        // It should be in the same layout used to instantiate the
+        // RemoteViews
+        // object above.
+        rv.setEmptyView(R.id.list_view, R.id.empty_lecture);
 
         // 클릭시 시간표 화면 띄운다.
-        Intent intent = new Intent(context, MyTimeTable.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent clickIntent = new Intent(context, MyTimeTable.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
+                clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        // 위젯에서의 텍스트 설정
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
-        views.setTextViewText(R.id.widget_textview, str);
-        views.setOnClickPendingIntent(R.id.widget_textview, pendingIntent);
+        rv.setOnClickPendingIntent(R.id.widget, pendingIntent);
+        rv.setPendingIntentTemplate(R.id.list_view, pendingIntent);
 
-        ComponentName componentName = new ComponentName(context, MyAppwidgetProvider.class);
-        AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        manager.updateAppWidget(componentName, views);
-    }
-
-    private String makeStr(Context context) {
-
-        StringBuffer buf = new StringBuffer();
-
-        // 오늘 현재 시간 이후의 수업만
-        List<DKClass> list = db.DBselect();
-
-        List<PartialTime> showList = new ArrayList<PartialTime>(); 
-        for (DKClass dkClass : list) {
-
-            PartialTime[] partials = dkClass.getPartialTime();
-
-            for (int i = 0; i < partials.length; i++) {
-                
-                if(partials[i].getHour() == -1) continue;
-
-                if (partials[i].isShowWidget()) {
-                    showList.add(partials[i]);
-                }
-            }
-        }
-
-        Collections.sort(showList, new Comparator<PartialTime>() {
-            @Override
-            public int compare(PartialTime lhs, PartialTime rhs) {
-                return lhs.getHour() - rhs.getHour();
-            }
-        });
-
-        for (PartialTime partialTime : showList) {
-          buf.append(partialTime.getTimeStr(context) + " " + partialTime.getLecture() + " ("
-          + partialTime.getRoom() + ")\n");
-        }
-
-        if (buf.length() == 0)
-            buf.append("수업 정보가 없습니다.");
-
-        return buf.toString();
-    }
-
-    static String cut(String in) {
-        if (in.getBytes().length > 18) {
-            return in.substring(0, 5) + "..";
-        } else {
-            return in;
-        }
+        appWidgetManager.updateAppWidget(appWidgetId, rv);
     }
 
 }

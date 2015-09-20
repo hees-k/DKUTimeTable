@@ -16,6 +16,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -24,8 +25,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.widget.GridLayout;
-import android.support.v7.widget.GridLayout.LayoutParams;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -36,8 +35,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.EditText;
+import android.widget.GridLayout;
+import android.widget.GridLayout.LayoutParams;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,13 +60,14 @@ public class MyTimeTable extends Activity {
 
     private ScrollView scroll;
     private GridLayout grid;
-    
+
     private int cellWidth;
     private int cellHeight;
 
     private int getStatusBarHeight() {
         int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int resourceId = getResources().getIdentifier("status_bar_height",
+                "dimen", "android");
         if (resourceId > 0) {
             result = getResources().getDimensionPixelSize(resourceId);
         }
@@ -97,9 +98,10 @@ public class MyTimeTable extends Activity {
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        int height = metrics.heightPixels - getStatusBarHeight() - getActionBarHeight();
+        int height = metrics.heightPixels - getStatusBarHeight()
+                - getActionBarHeight();
         int width = metrics.widthPixels;
-        
+
         cellWidth = width / 6;
         cellHeight = height / 20;
 
@@ -113,8 +115,6 @@ public class MyTimeTable extends Activity {
         }
 
     }
-
-
 
     private int YELLOW1 = 0xFFFFEF7F;
     private int YELLOW2 = 0xFFFFEFAF;
@@ -130,12 +130,14 @@ public class MyTimeTable extends Activity {
         makeAndAddView("목", cellWidth - 3, YELLOW1, 0, 4);
         makeAndAddView("금", cellWidth - 3, YELLOW1, 0, 5);
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(this);
 
         String defCampus = getString(R.string.default_campus_value);
         String settingCampus = prefs.getString("setting_campus", defCampus);
 
-        final String[] times = (settingCampus.equals(defCampus) ? DKClass.jukjeonTime : DKClass.cheonanTime);
+        final String[] times = (settingCampus.equals(defCampus) ? DKClass.jukjeonTime
+                : DKClass.cheonanTime);
 
         for (int i = 0; i < 24; i++) {
             String s = (i < 9 ? " " : "") + (i + 1) + "  ";
@@ -147,7 +149,8 @@ public class MyTimeTable extends Activity {
         }
     }
 
-    private void makeAndAddView(String txt, int cellWidth, int color, int row, int col) {
+    private void makeAndAddView(String txt, int cellWidth, int color, int row,
+            int col) {
         AutoFitTextView tv = new AutoFitTextView(this);
         tv.setText(txt);
         tv.setTextColor(Color.BLACK);
@@ -157,14 +160,16 @@ public class MyTimeTable extends Activity {
         tv.setGravity(Gravity.CENTER);
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
 
-        LayoutParams params = new LayoutParams(GridLayout.spec(row), GridLayout.spec(col));
+        LayoutParams params = new LayoutParams(GridLayout.spec(row),
+                GridLayout.spec(col));
         params.setGravity(Gravity.FILL);
         params.setMargins(1, 1, 1, 1);
 
         grid.addView(tv, params);
     }
 
-    private void makeAndAddView(final String code, String txt, String room, int row, int col, int rowSpan) {
+    private void makeAndAddView(final String code, String txt, String room,
+            int row, int col, int rowSpan) {
 
         // TextView tv = new TextView(this);
         // tv.setText(Html.fromHtml(txt + "<br><font color=blue>" + room +
@@ -208,7 +213,8 @@ public class MyTimeTable extends Activity {
             }
         });
 
-        GridLayout.LayoutParams layparam = (GridLayout.LayoutParams) v.getLayoutParams();
+        GridLayout.LayoutParams layparam = (GridLayout.LayoutParams) v
+                .getLayoutParams();
         layparam.columnSpec = GridLayout.spec(col);
         layparam.rowSpec = GridLayout.spec(row, rowSpan);
         layparam.setGravity(Gravity.FILL);
@@ -258,7 +264,8 @@ public class MyTimeTable extends Activity {
                 int timeLen = partials[i].getTimeLength();
                 String room = partials[i].getRoom();
 
-                if(startHour == -1 || col < 1 || col > 5) continue;
+                if (startHour == -1 || col < 1 || col > 5)
+                    continue;
                 makeAndAddView(code, lecture, room, startHour, col, timeLen);
             }
 
@@ -309,7 +316,8 @@ public class MyTimeTable extends Activity {
 
             // 금주의 식단-학생식당 페이지
             Intent i = new Intent(Intent.ACTION_VIEW);
-            Uri u = Uri.parse("http://203.237.226.95:8080/mobile/m11/m11_c1_2.jsp?instanceid=cvnc");
+            Uri u = Uri
+                    .parse("http://203.237.226.95:8080/mobile/m11/m11_c1_2.jsp?instanceid=cvnc");
             i.setData(u);
             startActivity(i);
 
@@ -321,7 +329,8 @@ public class MyTimeTable extends Activity {
             if (filePath == null) {
                 Toast.makeText(this, "백업이 실패하였습니다.", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, filePath + " 에 백업 되었습니다.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, filePath + " 에 백업 되었습니다.",
+                        Toast.LENGTH_LONG).show();
             }
 
             return true;
@@ -344,10 +353,8 @@ public class MyTimeTable extends Activity {
 
     private void takeScreen() {
 
-        View v1 = scroll;
-        v1.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
-        v1.buildDrawingCache();
-        Bitmap bm = v1.getDrawingCache();
+        Bitmap bm = loadBitmapFromView(scroll, grid.getWidth(),
+                grid.getHeight());
 
         try {
             String folderName = Util.getExtPath() + "/tmp";
@@ -367,7 +374,8 @@ public class MyTimeTable extends Activity {
 
                 Intent sendIntent = new Intent(Intent.ACTION_SEND);
                 sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Photo");
-                sendIntent.putExtra(Intent.EXTRA_TEXT, "share timetable with your friends.");
+                sendIntent.putExtra(Intent.EXTRA_TEXT,
+                        "share timetable with your friends.");
                 sendIntent.setType("image/jpeg");
                 sendIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
 
@@ -378,6 +386,14 @@ public class MyTimeTable extends Activity {
 
             Toast.makeText(this, "이미지 보내기를 실패하였습니다.", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public static Bitmap loadBitmapFromView(View v, int width, int height) {
+        Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        v.layout(0, 0, v.getLayoutParams().width, v.getLayoutParams().height);
+        v.draw(c);
+        return b;
     }
 
     @Override
@@ -472,10 +488,12 @@ public class MyTimeTable extends Activity {
     private Dialog createEmptyClassDlg() {
 
         LayoutInflater inflater = getLayoutInflater();
-        View layout = inflater.inflate(R.layout.lecture_new, (ViewGroup) findViewById(R.id.layout_root));
+        View layout = inflater.inflate(R.layout.lecture_new,
+                (ViewGroup) findViewById(R.id.layout_root));
 
         final EditText lecture = (EditText) layout.findViewById(R.id.lecture);
-        final EditText professor = (EditText) layout.findViewById(R.id.professor);
+        final EditText professor = (EditText) layout
+                .findViewById(R.id.professor);
         final EditText timeRoom = (EditText) layout.findViewById(R.id.timeRoom);
         final EditText memo = (EditText) layout.findViewById(R.id.memo);
 
@@ -502,15 +520,17 @@ public class MyTimeTable extends Activity {
 
     private Dialog createClassInfoDlg(final DKClass dkClass) {
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(this);
 
-        final String year = prefs.getString("year", "2013");
-        final String semester = prefs.getString("semester", "1");
+        // final String year = prefs.getString("year", "2013");
+        // final String semester = prefs.getString("semester", "1");
 
         String defCampus = getString(R.string.default_campus_value);
         String settingCampus = prefs.getString("setting_campus", defCampus);
 
-        final String campusCode = (settingCampus.equals(defCampus) ? "4000000001" : "3000000001");
+        // final String campusCode = (settingCampus.equals(defCampus) ?
+        // "4000000001" : "3000000001");
 
         // 죽전
         // http://daninfo.dankook.ac.kr/hagsa/hlt/plan/printplan.aspx?year=2013&haggi=1&campus=4000000001&gwamogid=447940&class=2
@@ -519,26 +539,29 @@ public class MyTimeTable extends Activity {
         // http://daninfo.dankook.ac.kr/hagsa/hlt/plan/printplan.aspx?year=2013&haggi=1&campus=3000000001&gwamogid=346200&class=1
 
         LayoutInflater inflater = getLayoutInflater();
-        View layout = inflater.inflate(R.layout.lecture_info, (ViewGroup) findViewById(R.id.layout_root));
+        View layout = inflater.inflate(R.layout.lecture_info,
+                (ViewGroup) findViewById(R.id.layout_root));
 
         final TextView lecture = (TextView) layout.findViewById(R.id.lecture);
-        lecture.setOnClickListener(new View.OnClickListener() {
+        // lecture.setOnClickListener(new View.OnClickListener() {
+        //
+        // @Override
+        // public void onClick(View v) {
+        //
+        // String s = String
+        // .format("http://daninfo.dankook.ac.kr/hagsa/hlt/plan/printplan.aspx?year=%s&haggi=%s&campus=%s&gwamogid=%s&class=%s",
+        // year, semester, campusCode, dkClass.getCode(),
+        // dkClass.getDiv());
+        //
+        // Intent i = new Intent(getBaseContext(), WebViewActivity.class);
+        // Uri u = Uri.parse(s);
+        // i.setData(u);
+        // startActivity(i);
+        // }
+        // });
 
-            @Override
-            public void onClick(View v) {
-
-                String s = String
-                        .format("http://daninfo.dankook.ac.kr/hagsa/hlt/plan/printplan.aspx?year=%s&haggi=%s&campus=%s&gwamogid=%s&class=%s",
-                                year, semester, campusCode, dkClass.getCode(), dkClass.getDiv());
-
-                Intent i = new Intent(getBaseContext(), WebViewActivity.class);
-                Uri u = Uri.parse(s);
-                i.setData(u);
-                startActivity(i);
-            }
-        });
-
-        final TextView professor = (TextView) layout.findViewById(R.id.professor);
+        final TextView professor = (TextView) layout
+                .findViewById(R.id.professor);
         final TextView timeRoom = (TextView) layout.findViewById(R.id.timeRoom);
         final EditText memo = (EditText) layout.findViewById(R.id.memo);
 
@@ -571,22 +594,26 @@ public class MyTimeTable extends Activity {
     private Dialog createLoginDlg() {
 
         LayoutInflater inflater = getLayoutInflater();
-        View layout = inflater.inflate(R.layout.login, (ViewGroup) findViewById(R.id.layout_root));
+        View layout = inflater.inflate(R.layout.login,
+                (ViewGroup) findViewById(R.id.layout_root));
 
         final AlertDialog.Builder aDialog = new AlertDialog.Builder(this);
         aDialog.setTitle("로그인하시겠습니까?");
         aDialog.setView(layout);
 
-        final EditText schoolNumber = (EditText) layout.findViewById(R.id.schoolNumber);
+        final EditText schoolNumber = (EditText) layout
+                .findViewById(R.id.schoolNumber);
         final EditText password = (EditText) layout.findViewById(R.id.password);
 
-        aDialog.setPositiveButton("시간표 다시 가져오기", new DialogInterface.OnClickListener() {
+        aDialog.setPositiveButton("시간표 다시 가져오기",
+                new DialogInterface.OnClickListener() {
 
-            public void onClick(final DialogInterface dialog, int which) {
-                new LoginTask().execute(schoolNumber.getText().toString(), password.getText().toString());
+                    public void onClick(final DialogInterface dialog, int which) {
+                        new LoginTask().execute(schoolNumber.getText()
+                                .toString(), password.getText().toString());
 
-            }
-        });
+                    }
+                });
         aDialog.setNegativeButton("취소", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
@@ -624,7 +651,8 @@ public class MyTimeTable extends Activity {
 
     private class LoginTask extends AsyncTask<String, Void, String> {
 
-        private final ProgressDialog dialog = new ProgressDialog(MyTimeTable.this);
+        private final ProgressDialog dialog = new ProgressDialog(
+                MyTimeTable.this);
 
         @Override
         protected void onPreExecute() {
@@ -658,7 +686,8 @@ public class MyTimeTable extends Activity {
             String password = params[1];
 
             try {
-                List<DKClass> classes = Parse.getClasses(schoolNumber, password, getBaseContext());
+                List<DKClass> classes = Parse.getClasses(schoolNumber,
+                        password, getBaseContext());
 
                 db.DBclear();
                 db.DBinsert(classes);
@@ -676,10 +705,12 @@ public class MyTimeTable extends Activity {
         protected void onCancelled() {
             super.onCancelled();
 
-            AlertDialog alertDialog = new AlertDialog.Builder(MyTimeTable.this).create();
+            AlertDialog alertDialog = new AlertDialog.Builder(MyTimeTable.this)
+                    .create();
 
             alertDialog.setTitle("인터넷 연결 실패");
-            alertDialog.setMessage("Wifi 혹은 3G망이 연결되지 않았거나 원활하지 않습니다.네트워크 확인후 다시 접속해 주세요!");
+            alertDialog
+                    .setMessage("Wifi 혹은 3G망이 연결되지 않았거나 원활하지 않습니다.네트워크 확인후 다시 접속해 주세요!");
             alertDialog.setButton("확인", new OnClickListener() {
 
                 @Override
@@ -702,9 +733,11 @@ public class MyTimeTable extends Activity {
             // * 웹정보시스템 접속 안되거나
             // * html이 변경되었거나
             if (result == null) {
-                Toast.makeText(MyTimeTable.this, "강의 시간 목록 가져오기 성공", Toast.LENGTH_LONG).show();
+                Toast.makeText(MyTimeTable.this, "강의 시간 목록 가져오기 성공",
+                        Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(MyTimeTable.this, result, Toast.LENGTH_LONG).show();
+                Toast.makeText(MyTimeTable.this, result, Toast.LENGTH_LONG)
+                        .show();
                 showDialog(LOGIN_DLG_FAIL);
             }
 
