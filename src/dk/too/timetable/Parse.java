@@ -30,6 +30,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -52,35 +53,28 @@ public class Parse {
         // param set
         HttpPost httpPost = new HttpPost("https://webinfo.dankook.ac.kr/member/logon.do");
 
+        httpPost.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        httpPost.setHeader("Accept-Encoding", "deflate");
+        httpPost.setHeader("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
+        httpPost.setHeader("Cache-Control", "max-age=0");
+        httpPost.setHeader("Connection", "keep-alive");
+        httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
         List<NameValuePair> qparams = new ArrayList<NameValuePair>();
         qparams.add(new BasicNameValuePair("username", schoolNumber));
         qparams.add(new BasicNameValuePair("password", password));
+        qparams.add(new BasicNameValuePair("dn", ""));
+        qparams.add(new BasicNameValuePair("tabIndex", "0"));
         qparams.add(new BasicNameValuePair("sso", "ok"));
-        qparams.add(new BasicNameValuePair("returnurl", "http://daninfo.dankook.ac.kr/common/ssoredirect.aspx?url=/hagsa/hla/hla_confirm.asp"));
+        qparams.add(new BasicNameValuePair("returnurl", "http://webinfo.dankook.ac.kr:80/tiac/univ/lssn/ttmg/views/findTkcrsTmtblList.do"));
 
         UrlEncodedFormEntity entity = new UrlEncodedFormEntity(qparams, "UTF-8");
 	httpPost.setEntity(entity);
 
         // ============ Step2 ==================
-        // login check
-        HttpResponse response = httpclient.execute(httpPost);
-        InputStream loginStream = response.getEntity().getContent();
-        try {
-            String loginHtml = writeHtml(loginStream);
-
-            if (!loginCheck(loginHtml))
-                throw new IOException("로그인 실패");
-
-        } finally {
-            loginStream.close();
-        }
-
-        // ============ Step3 ==================
         // parsing
-        // 강의 시간표 : http://daninfo.dankook.ac.kr/hagsa/hla/hla_sigan.asp
-        // 수강확인서 출력 : http://daninfo.dankook.ac.kr/hagsa/hla/hla_confirm.asp
-        HttpGet httpGet = new HttpGet("http://daninfo.dankook.ac.kr/hagsa/hla/hla_confirm.asp");
-        response = httpclient.execute(httpGet);
+
+        HttpResponse response = httpclient.execute(httpPost);
 
         InputStream in = response.getEntity().getContent();
         try {
@@ -113,7 +107,7 @@ public class Parse {
         while ((readSize = in.read(buffer, 0, buffer.length)) != -1) {
             out.write(buffer, 0, readSize);
 
-            Log.d(Debug.D + "Parse", "debug. " + new String(buffer, 0, readSize, "EUC-KR"));
+            Log.d(Debug.D + "Parse", "debug. " + new String(buffer, 0, readSize, "UTF-8"));
         }
 
         out.close();
@@ -215,7 +209,7 @@ public class Parse {
 
         try {
             FileInputStream in = new FileInputStream(filePath);
-            Source source = new Source(new InputStreamReader(in, "EUC-KR"));
+            Source source = new Source(new InputStreamReader(in, "UTF-8"));
             in.close();
 
             Segment haggi = new Segment(source, source.getAllElements(HTMLElementName.BR).get(2).getEnd(), source
@@ -242,23 +236,26 @@ public class Parse {
 
                 List<Element> tds = trs.get(i).getAllElements(HTMLElementName.TD);
 
-                String code = tds.get(1).getTextExtractor().toString(); // 과목코드
-                String lecture = tds.get(2).getTextExtractor().toString();
+                if(tds.size() == 10) {
 
-                String _class = tds.get(3).getTextExtractor().toString(); // 분반
-
-                // .replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>",
-                // ""); // 과목명
-
-//                Element unit = tds.get(4); // 학점
-                String timeRoom = tds.get(5).getTextExtractor().toString(); // 시간,강의실
-                                                                            // 화8,9(자연305)/목3(자연516)
-                String professor = tds.get(6).getTextExtractor().toString(); // 교강사
-
-                DKClass dk = new DKClass(code, _class, lecture, timeRoom, professor, "");
-                list.add(dk);
-
-                Log.d(Debug.D + "Parse", "lecture. [" + dk.toString() + "]");
+                    String code = tds.get(1).getTextExtractor().toString(); // 교과목번호
+                    String _class = tds.get(2).getTextExtractor().toString(); // 분반
+    
+                    String lecture = tds.get(3).getTextExtractor().toString(); // 교과목명
+    
+                    // .replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>",
+                    // ""); // 과목명
+    
+    //                Element unit = tds.get(4); // 학점
+                    String timeRoom = tds.get(5).getTextExtractor().toString(); // 시간,강의실
+                                                                                // 화8,9(자연305)/목3(자연516)
+                    String professor = tds.get(6).getTextExtractor().toString(); // 교강사
+    
+                    DKClass dk = new DKClass(code, _class, lecture, timeRoom, professor, "");
+                    list.add(dk);
+    
+                    Log.d(Debug.D + "Parse", "lecture. [" + dk.toString() + "]");
+                }
             }
 
         } catch (NullPointerException e) {

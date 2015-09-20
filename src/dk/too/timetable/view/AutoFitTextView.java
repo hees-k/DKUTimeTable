@@ -1,11 +1,15 @@
 package dk.too.timetable.view;
 
+import dk.too.timetable.R;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.widget.TextView;
 
 public class AutoFitTextView extends TextView {
+
+    private float mMinTextSize;
+    private float mMaxTextSize;
 
     public AutoFitTextView(Context context) {
         super(context);
@@ -19,25 +23,27 @@ public class AutoFitTextView extends TextView {
 
     private void init() {
 
-        maxTextSize = this.getTextSize();
-        if (maxTextSize < 30) {
-            maxTextSize = 25;
+        mMaxTextSize = this.getTextSize();
+
+        int maxTextSize = getResources().getDimensionPixelSize(R.dimen.max_text_size);
+        if (mMaxTextSize < maxTextSize) {
+            mMaxTextSize = maxTextSize;
         }
-        minTextSize = 20;
+        mMinTextSize = getResources().getDimensionPixelSize(R.dimen.min_text_size);
     }
 
     private void refitText(String text, int textWidth) {
         if (textWidth > 0) {
             int availableWidth = textWidth - this.getPaddingLeft()
                     - this.getPaddingRight();
-            float trySize = maxTextSize;
+            float trySize = mMaxTextSize;
 
             this.setTextSize(TypedValue.COMPLEX_UNIT_PX, trySize);
-            while ((trySize > minTextSize)
+            while ((trySize > mMinTextSize)
                     && (this.getPaint().measureText(text) > availableWidth)) {
                 trySize -= 1;
-                if (trySize <= minTextSize) {
-                    trySize = minTextSize;
+                if (trySize <= mMinTextSize) {
+                    trySize = mMinTextSize;
                     break;
                 }
                 this.setTextSize(TypedValue.COMPLEX_UNIT_PX, trySize);
@@ -67,22 +73,18 @@ public class AutoFitTextView extends TextView {
     }
 
     public float getMinTextSize() {
-        return minTextSize;
+        return mMinTextSize;
     }
 
     public void setMinTextSize(int minTextSize) {
-        this.minTextSize = minTextSize;
+        this.mMinTextSize = minTextSize;
     }
 
     public float getMaxTextSize() {
-        return maxTextSize;
+        return mMaxTextSize;
     }
 
     public void setMaxTextSize(int minTextSize) {
-        this.maxTextSize = minTextSize;
+        this.mMaxTextSize = minTextSize;
     }
-
-    private float minTextSize;
-    private float maxTextSize;
-
 }
