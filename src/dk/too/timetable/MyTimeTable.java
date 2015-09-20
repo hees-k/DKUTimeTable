@@ -476,7 +476,7 @@ public class MyTimeTable extends Activity {
         }
         case LOGIN_DLG_FAIL: {
             Dialog dlg = createLoginDlg();
-            dlg.setTitle("로그인에 실패했습니다.\n다시 로그인 하세요.");
+            dlg.setTitle("로그인에 실패 했습니다.\n다시 로그인 하세요.");
             return dlg;
         }
 
@@ -605,22 +605,47 @@ public class MyTimeTable extends Activity {
                 .findViewById(R.id.schoolNumber);
         final EditText password = (EditText) layout.findViewById(R.id.password);
 
-        aDialog.setPositiveButton("시간표 다시 가져오기",
-                new DialogInterface.OnClickListener() {
-
-                    public void onClick(final DialogInterface dialog, int which) {
-                        new LoginTask().execute(schoolNumber.getText()
-                                .toString(), password.getText().toString());
-
-                    }
-                });
+        aDialog.setPositiveButton("시간표 가져오기", null);
         aDialog.setNegativeButton("취소", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
             }
         });
 
-        return aDialog.create();
+        final AlertDialog d = aDialog.create();
+
+        d.setOnShowListener(new DialogInterface.OnShowListener() {
+
+            @Override
+            public void onShow(DialogInterface dialog) {
+                // TODO Auto-generated method stub
+                d.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(
+                        new View.OnClickListener() {
+
+                            @Override
+                            public void onClick(View v) {
+                                if (schoolNumber.getText().length() == 0) {
+                                    Toast.makeText(MyTimeTable.this,
+                                            "학번을 입력하세요.", Toast.LENGTH_LONG)
+                                            .show();
+                                } else if (password.getText().length() == 0) {
+                                    Toast.makeText(MyTimeTable.this,
+                                            "패스워드를 입력하세요.", Toast.LENGTH_LONG)
+                                            .show();
+                                } else {
+
+                                    new LoginTask().execute(schoolNumber
+                                            .getText().toString(), password
+                                            .getText().toString());
+                                    d.dismiss();
+                                }
+                            }
+                        });
+            }
+
+        });
+
+        return d;
     }
 
     private void saveError(Exception e) {
@@ -733,7 +758,7 @@ public class MyTimeTable extends Activity {
             // * 웹정보시스템 접속 안되거나
             // * html이 변경되었거나
             if (result == null) {
-                Toast.makeText(MyTimeTable.this, "강의 시간 목록 가져오기 성공",
+                Toast.makeText(MyTimeTable.this, "시간표 가져오기 성공",
                         Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(MyTimeTable.this, result, Toast.LENGTH_LONG)

@@ -40,20 +40,25 @@ import dk.too.util.Util;
 
 public class Parse {
 
-    public static List<DKClass> getClasses(String schoolNumber, String password, Context context) throws Exception {
+    public static List<DKClass> getClasses(String schoolNumber,
+            String password, Context context) throws Exception {
 
         trustAllHosts();
 
         HttpClient httpclient = new DefaultHttpClient();
-        httpclient.getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
+        httpclient.getParams().setParameter(
+                ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
 
         // ============ Step1 ==================
         // param set
-        HttpPost httpPost = new HttpPost("https://webinfo.dankook.ac.kr/member/logon.do");
+        HttpPost httpPost = new HttpPost(
+                "https://webinfo.dankook.ac.kr/member/logon.do");
 
-        httpPost.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        httpPost.setHeader("Accept",
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
         httpPost.setHeader("Accept-Encoding", "deflate");
-        httpPost.setHeader("Accept-Language", "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
+        httpPost.setHeader("Accept-Language",
+                "ko-KR,ko;q=0.8,en-US;q=0.6,en;q=0.4");
         httpPost.setHeader("Cache-Control", "max-age=0");
         httpPost.setHeader("Connection", "keep-alive");
         httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -64,10 +69,12 @@ public class Parse {
         qparams.add(new BasicNameValuePair("dn", ""));
         qparams.add(new BasicNameValuePair("tabIndex", "0"));
         qparams.add(new BasicNameValuePair("sso", "ok"));
-        qparams.add(new BasicNameValuePair("returnurl", "http://webinfo.dankook.ac.kr:80/tiac/univ/lssn/ttmg/views/findTkcrsTmtblList.do"));
+        qparams.add(new BasicNameValuePair(
+                "returnurl",
+                "http://webinfo.dankook.ac.kr:80/tiac/univ/lssn/ttmg/views/findTkcrsTmtblList.do"));
 
         UrlEncodedFormEntity entity = new UrlEncodedFormEntity(qparams, "UTF-8");
-	httpPost.setEntity(entity);
+        httpPost.setEntity(entity);
 
         // ============ Step2 ==================
         // parsing
@@ -88,7 +95,7 @@ public class Parse {
     private static String writeHtml(InputStream in) throws IOException {
 
         String filePath = Util.getExtPath();
-        if(filePath == null) {
+        if (filePath == null) {
             // emulator
             filePath = Util.getLocalDir();
         }
@@ -105,21 +112,22 @@ public class Parse {
         while ((readSize = in.read(buffer, 0, buffer.length)) != -1) {
             out.write(buffer, 0, readSize);
 
-            Log.d(Debug.D + "Parse", "debug. " + new String(buffer, 0, readSize, "UTF-8"));
+            Log.d(Debug.D + "Parse", "debug. "
+                    + new String(buffer, 0, readSize, "UTF-8"));
         }
 
         out.close();
 
         return htmlPath;
     }
-    
-    private static void debugHeader(HttpResponse response)
-    {
+
+    private static void debugHeader(HttpResponse response) {
         // debug
         Log.d(Debug.D + "Parse", "statusline. " + response.getStatusLine());
         Header[] h = response.getAllHeaders();
         for (int i = 0; i < h.length; i++) {
-            Log.d(Debug.D + "Parse", "header. " + h[i].getName() + " : " + h[i].getValue());
+            Log.d(Debug.D + "Parse",
+                    "header. " + h[i].getName() + " : " + h[i].getValue());
         }
         // debug
     }
@@ -132,14 +140,16 @@ public class Parse {
             }
 
             @Override
-            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
+            public void checkClientTrusted(
+                    java.security.cert.X509Certificate[] chain, String authType)
                     throws java.security.cert.CertificateException {
                 // TODO Auto-generated method stub
 
             }
 
             @Override
-            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
+            public void checkServerTrusted(
+                    java.security.cert.X509Certificate[] chain, String authType)
                     throws java.security.cert.CertificateException {
                 // TODO Auto-generated method stub
 
@@ -150,14 +160,17 @@ public class Parse {
         try {
             SSLContext sc = SSLContext.getInstance("SSL");
             sc.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            HttpsURLConnection
+                    .setDefaultSSLSocketFactory(sc.getSocketFactory());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static InputStream getHtmlPageMobile(String schoolNumber, String password) throws IOException {
-        HttpPost httpPost = new HttpPost("http://203.237.226.95:8080/mobile/login/login_ok.jsp");
+    private static InputStream getHtmlPageMobile(String schoolNumber,
+            String password) throws IOException {
+        HttpPost httpPost = new HttpPost(
+                "http://203.237.226.95:8080/mobile/login/login_ok.jsp");
 
         // 32081926, 1929
         // 32091956
@@ -180,13 +193,15 @@ public class Parse {
         return response.getEntity().getContent();
     }
 
-    private static boolean loginCheck(String filePath) throws UnsupportedEncodingException, IOException {
+    private static boolean loginCheck(String filePath)
+            throws UnsupportedEncodingException, IOException {
 
         FileInputStream in = new FileInputStream(filePath);
         Source source = new Source(new InputStreamReader(in, "EUC-KR"));
         in.close();
 
-        if (source.getTextExtractor().toString().contains("입력하신 정보를 다시 확인해주세요."))
+        if (source.getTextExtractor().toString()
+                .contains("입력하신 정보를 다시 확인해주세요."))
             return false;
 
         return true;
@@ -201,7 +216,8 @@ public class Parse {
      * @throws IOException
      * @throws
      */
-    private static List<DKClass> parseJericho(String filePath, Context Context) throws Exception {
+    private static List<DKClass> parseJericho(String filePath, Context Context)
+            throws Exception {
 
         List<DKClass> list = new ArrayList<DKClass>();
 
@@ -210,7 +226,17 @@ public class Parse {
             Source source = new Source(new InputStreamReader(in, "UTF-8"));
             in.close();
 
-            Segment haggi = new Segment(source, source.getAllElements(HTMLElementName.BR).get(2).getEnd(), source
+            Element error = source.getElementById("errors");
+            if (error != null) {
+
+                Element errorP = error.getAllElementsByClass("warn").get(0);
+                String errorMsg = errorP.getTextExtractor().toString();
+
+                throw new LoginError(errorMsg);
+            }
+
+            Segment haggi = new Segment(source, source
+                    .getAllElements(HTMLElementName.BR).get(2).getEnd(), source
                     .getAllElements(HTMLElementName.BR).get(3).getBegin());
 
             String str = haggi.toString();
@@ -220,7 +246,8 @@ public class Parse {
 
             Matcher mt = ptn.matcher(str);
             if (mt.find()) {
-                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(Context).edit();
+                SharedPreferences.Editor editor = PreferenceManager
+                        .getDefaultSharedPreferences(Context).edit();
                 editor.putString("year", mt.group(1));
                 editor.putString("semester", mt.group(2));
                 editor.commit();
@@ -232,33 +259,38 @@ public class Parse {
 
             for (int i = 1; i < trs.size(); i++) {
 
-                List<Element> tds = trs.get(i).getAllElements(HTMLElementName.TD);
+                List<Element> tds = trs.get(i).getAllElements(
+                        HTMLElementName.TD);
 
-                if(tds.size() == 10) {
+                if (tds.size() == 10) {
 
                     String code = tds.get(1).getTextExtractor().toString(); // 교과목번호
                     String _class = tds.get(2).getTextExtractor().toString(); // 분반
-    
+
                     String lecture = tds.get(3).getTextExtractor().toString(); // 교과목명
-    
+
                     // .replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>",
                     // ""); // 과목명
-    
-    //                Element unit = tds.get(4); // 학점
+
+                    // Element unit = tds.get(4); // 학점
                     String timeRoom = tds.get(5).getTextExtractor().toString(); // 시간,강의실
                                                                                 // 화8,9(자연305)/목3(자연516)
                     String professor = tds.get(6).getTextExtractor().toString(); // 교강사
-    
-                    DKClass dk = new DKClass(code, _class, lecture, timeRoom, professor, "");
+
+                    DKClass dk = new DKClass(code, _class, lecture, timeRoom,
+                            professor, "");
                     list.add(dk);
-    
+
                     Log.d(Debug.D + "Parse", "lecture. [" + dk.toString() + "]");
                 }
             }
 
         } catch (NullPointerException e) {
             // 서버 상태 이상? 재시도 필요.
-            throw new Exception("서버 연결 실패(2). 로그인 정보를 확인하세요.", e);
+            throw new Exception("Parsing Error.", e);
+        } catch (LoginError e) {
+            // 서버 상태 이상? 재시도 필요.
+            throw new Exception("서버 연결 실패(2). " + e.getMessage() , e);
 
         } catch (IOException e) {
             // 연결이 불안정
@@ -277,7 +309,8 @@ public class Parse {
      * @throws IOException
      * @throws
      */
-    private static List<DKClass> parseJerichoMobile(InputStream in, String[] semester) throws Exception {
+    private static List<DKClass> parseJerichoMobile(InputStream in,
+            String[] semester) throws Exception {
 
         List<DKClass> list = new ArrayList<DKClass>();
 
@@ -287,7 +320,8 @@ public class Parse {
 
             Element top = source.getFirstElementByClass("tb_style_01");
             if (!top.isEmpty()) {
-                String str = top.getFirstElement("caption").getTextExtractor().toString();
+                String str = top.getFirstElement("caption").getTextExtractor()
+                        .toString();
                 Log.d(Debug.D + "Parse", "semester. [" + str + "]");
                 // [2011년 2학기 / 확정과목수 : 9 / 확정학점 : 20]
 
@@ -299,7 +333,8 @@ public class Parse {
                     semester[0] = mt.group(1);
                     semester[1] = mt.group(2);
 
-                    Log.d(Debug.D + "Parse", "find. [" + mt.group(1) + "-" + mt.group(2) + "]");
+                    Log.d(Debug.D + "Parse",
+                            "find. [" + mt.group(1) + "-" + mt.group(2) + "]");
                 }
             }
 
@@ -320,7 +355,8 @@ public class Parse {
                 String lecture = tds.get(0).getTextExtractor().toString();
                 String timeRoom = tds.get(1).getTextExtractor().toString();
 
-                DKClass dk = new DKClass(code, _class, lecture, timeRoom, professor, "");
+                DKClass dk = new DKClass(code, _class, lecture, timeRoom,
+                        professor, "");
                 list.add(dk);
 
                 Log.d(Debug.D + "Parse", "lecture. [" + dk.toString() + "]");
