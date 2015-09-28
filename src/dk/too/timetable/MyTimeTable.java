@@ -4,11 +4,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -299,6 +303,7 @@ public class MyTimeTable extends Activity {
 
             Intent intent = new Intent(this, SettingPreference.class);
             startActivityForResult(intent, SETTINGS);
+//            startActivity(intent);
             return true;
         }
         case R.id.send_image: {
@@ -405,63 +410,54 @@ public class MyTimeTable extends Activity {
             boolean useAlarm = data.getBooleanExtra("useAlarm", false);
             int alarmTime = data.getIntExtra("alarmTime", 10);
 
-            changeAlarm(useAlarm, alarmTime);
+            changeAlarm(this, db, useAlarm, alarmTime);
 
             loadData();
         }
 
     }
 
-    private void changeAlarm(boolean useAlarm, int alarmTime) {
+    public static void changeAlarm(Context context, MyDB db, boolean useAlarm, int alarmTime) {
 
-        // Log.d(Debug.D + "MyTimeTable", "onActivityResult useAlarm : " +
-        // useAlarm + " alarmTime : " + alarmTime);
-        // // 수업시간에서 Calendar 객체를 만들어낼 것.
-        //
-        // AlarmManager am = (AlarmManager)
-        // getSystemService(Context.ALARM_SERVICE);
-        //
-        // List<DKClass> classes = db.DBselect();
-        // int requestCode = 9999;
-        // for (DKClass dkClass : classes) {
-        //
-        // for (PartialTime partialTime : dkClass.getFirstTimes()) {
-        //
-        // Intent intent = new Intent(this, AlarmReceiver.class);
-        // intent.putExtra("message", "수업 시작 " + alarmTime + "분 전 입니다. \n" +
-        // dkClass.getLecture() + ". "
-        // + partialTime.getRoom());
-        // // intent.putExtra("message", "수업 시작 " + alarmTime +
-        // // "분 전 입니다. \n" + "소프트웨어공학" + " ("
-        // // + "2공524" + ")");
-        // PendingIntent sender = PendingIntent.getBroadcast(this,
-        // requestCode++, intent,
-        // PendingIntent.FLAG_UPDATE_CURRENT);
-        //
-        // long time = partialTime.nextCal().getTimeInMillis() - alarmTime *
-        // 60000;
-        // // Calendar cal = Calendar.getInstance();
-        // // cal.set(Calendar.HOUR_OF_DAY, 10);
-        // // cal.set(Calendar.MINUTE, 55);
-        // // cal.set(Calendar.SECOND, 0);
-        // // long time = cal.getTimeInMillis();
-        //
-        // Log.d(Debug.D + "MyTimeTable", intent.getStringExtra("message") +
-        // " time : " + new Date(time));
-        //
-        // // 알람 사용 유무에 따라.
-        // if (useAlarm) {
-        // am.setRepeating(AlarmManager.RTC_WAKEUP, time, 604800000, sender); //
-        // 일주일
-        // // 단위로
-        // // 반복
-        // } else {
-        // am.cancel(sender);
-        // }
-        //
-        // }
-        //
-        // }
+        Log.d(Debug.D + "MyTimeTable", "changeAlarm() useAlarm : "
+                + useAlarm + " alarmTime : " + alarmTime);
+        // 수업시간에서 Calendar 객체를 만들어낼 것.
+
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        List<DKClass> classes = db.DBselect();
+        int requestCode = 9999;
+        for (DKClass dkClass : classes) {
+
+            for (PartialTime partialTime : dkClass.getPartialTime()) {
+
+                if (partialTime.getHour() <= 0)
+                    continue;
+
+                Intent intent = new Intent(context, AlarmReceiver.class);
+                intent.putExtra("message", "수업 시작 " + alarmTime + "분 전 입니다. \n" + dkClass.getLecture() + ". " + partialTime.getRoom());
+                // intent.putExtra("message", "수업 시작 " + alarmTime + "분 전 입니다. \n" + "소프트웨어공학" + " ("+ "2공524" + ")");
+                PendingIntent sender = PendingIntent.getBroadcast(context, requestCode++, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                // 알람 사용 유무에 따라.
+                if (useAlarm) {
+                    try {
+                        long time = partialTime.getNextAlarm(context, alarmTime);
+
+                        Log.d(Debug.D + "MyTimeTable", intent.getStringExtra("message").replace('\n', '\t') + " time : " + new Date(time));
+
+                        am.setRepeating(AlarmManager.RTC_WAKEUP, time, 604800000, sender); // 일주일  단위로 반복
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    am.cancel(sender);
+                }
+
+            }
+
+        }
 
     }
 
@@ -520,14 +516,14 @@ public class MyTimeTable extends Activity {
 
     private Dialog createClassInfoDlg(final DKClass dkClass) {
 
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(this);
+//        SharedPreferences prefs = PreferenceManager
+//                .getDefaultSharedPreferences(this);
 
         // final String year = prefs.getString("year", "2013");
         // final String semester = prefs.getString("semester", "1");
 
-        String defCampus = getString(R.string.default_campus_value);
-        String settingCampus = prefs.getString("setting_campus", defCampus);
+//        String defCampus = getString(R.string.default_campus_value);
+//        String settingCampus = prefs.getString("setting_campus", defCampus);
 
         // final String campusCode = (settingCampus.equals(defCampus) ?
         // "4000000001" : "3000000001");
@@ -539,26 +535,22 @@ public class MyTimeTable extends Activity {
         // http://daninfo.dankook.ac.kr/hagsa/hlt/plan/printplan.aspx?year=2013&haggi=1&campus=3000000001&gwamogid=346200&class=1
 
         LayoutInflater inflater = getLayoutInflater();
-        View layout = inflater.inflate(R.layout.lecture_info,
-                (ViewGroup) findViewById(R.id.layout_root));
+        View layout = inflater.inflate(R.layout.lecture_info, (ViewGroup) findViewById(R.id.layout_root));
 
         final TextView lecture = (TextView) layout.findViewById(R.id.lecture);
-        // lecture.setOnClickListener(new View.OnClickListener() {
-        //
-        // @Override
-        // public void onClick(View v) {
-        //
-        // String s = String
-        // .format("http://daninfo.dankook.ac.kr/hagsa/hlt/plan/printplan.aspx?year=%s&haggi=%s&campus=%s&gwamogid=%s&class=%s",
-        // year, semester, campusCode, dkClass.getCode(),
-        // dkClass.getDiv());
-        //
-        // Intent i = new Intent(getBaseContext(), WebViewActivity.class);
-        // Uri u = Uri.parse(s);
-        // i.setData(u);
-        // startActivity(i);
-        // }
-        // });
+        lecture.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                String s = "https://webinfo.dankook.ac.kr/tiac/univ/lssn/lpdm/views/popup/findLecplnDtlForm.do?" + dkClass.getExtraInfo();
+
+                Intent i = new Intent(getBaseContext(), WebViewActivity.class);
+                Uri u = Uri.parse(s);
+                i.setData(u);
+                startActivity(i);
+            }
+        });
 
         final TextView professor = (TextView) layout
                 .findViewById(R.id.professor);

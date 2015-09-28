@@ -35,7 +35,7 @@ public class AlarmReceiver extends BroadcastReceiver {
             notify.ledOffMS = 1000; // LED
             notify.ledOnMS = 1000;
             notify.vibrate = new long[] { 500, 1000, 500, 1000, 500, 1000 }; // 진동
-            notify.sound = Uri.parse("file:/system/media/audio/ringtones/sample.ogg"); // 소리
+//            notify.sound = Uri.parse("file:/system/media/audio/ringtones/sample.ogg"); // 소리
             notify.number = ++count;
 
             notify.setLatestEventInfo(context, "수업 시간 알림", message, npi);

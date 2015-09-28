@@ -116,7 +116,7 @@ public class MyAppwidgetProvider extends AppWidgetProvider {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
                 clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        rv.setOnClickPendingIntent(R.id.widget, pendingIntent);
+//        rv.setOnClickPendingIntent(R.id.widget, pendingIntent);
         rv.setPendingIntentTemplate(R.id.list_view, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, rv);

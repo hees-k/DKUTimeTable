@@ -1,8 +1,11 @@
 package dk.too.timetable;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,14 +25,17 @@ public class DKClass {
             // 야간
             "18:00", "18:55", "19:50", "20:45", "21:40", "22:35", };
 
+    public static final String timeFormat = "HH:mm";
+
     private String code;
     private String lecture;
     private String div; // 분반
     private String timeRoom;
     private String professor;
     private String memo;
+    private String extraInfo; // 강의계획서 연결을 위한 정보
 
-    public DKClass(String code, String div, String lecture, String timeRoom, String professor, String memo) {
+    public DKClass(String code, String div, String lecture, String timeRoom, String professor, String memo, String extraInfo) {
         super();
         this.code = code;
         this.lecture = lecture;
@@ -37,27 +43,7 @@ public class DKClass {
         this.timeRoom = timeRoom;
         this.professor = professor;
         this.memo = memo;
-    }
-
-    public DKClass(String code, String lecture, String timeRoom, String professor, String memo) {
-        super();
-        this.code = code;
-        this.lecture = lecture;
-        this.timeRoom = timeRoom;
-        this.professor = professor;
-        this.memo = memo;
-    }
-
-    public DKClass(String lecture, String professor) {
-        super();
-        this.code = lecture;
-        this.lecture = lecture;
-        this.professor = professor;
-        this.timeRoom = "";
-    }
-
-    public void addTime(String timeRoom) {
-        this.timeRoom += timeRoom + "!";
+        this.extraInfo = extraInfo;
     }
 
     public String getCode() {
@@ -101,6 +87,10 @@ public class DKClass {
 
     public String getMemo() {
         return memo;
+    }
+
+    public String getExtraInfo() {
+        return extraInfo;
     }
 
     public static char toDayOfWeekStr(int col) {
@@ -310,6 +300,29 @@ public class DKClass {
             return room;
         }
 
+        public long getNextAlarm(Context context, int alarmMinute) throws ParseException {
+
+            Calendar cal = Calendar.getInstance();
+
+            SimpleDateFormat df = new SimpleDateFormat(timeFormat);
+
+            Date d = df.parse(getTimeStr(context));
+
+            cal.set(Calendar.DAY_OF_WEEK, getDayOfWeek(dayOfWeek));
+
+            cal.set(Calendar.HOUR_OF_DAY, d.getHours());
+            cal.set(Calendar.MINUTE, d.getMinutes());
+            cal.set(Calendar.SECOND, 0);
+            
+            cal.add(Calendar.MINUTE, -alarmMinute);
+
+            // 이전 시간이면 일주일 뒤로
+            if (Calendar.getInstance().after(cal)) {
+                cal.add(Calendar.DAY_OF_MONTH, 7);
+            }
+
+            return cal.getTimeInMillis();
+        }
     }
 
 }

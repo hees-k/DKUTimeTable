@@ -267,7 +267,41 @@ public class Parse {
                     String code = tds.get(1).getTextExtractor().toString(); // 교과목번호
                     String _class = tds.get(2).getTextExtractor().toString(); // 분반
 
-                    String lecture = tds.get(3).getTextExtractor().toString(); // 교과목명
+                    Element tds3 = tds.get(3);
+
+                    String lecture = tds3.getTextExtractor().toString(); // 교과목명
+
+                    StringBuffer extraInfo = new StringBuffer();
+
+                    try {
+                        // 강의계획서 연결을 위한 정보
+                        // https://webinfo.dankook.ac.kr/tiac/univ/lssn/lpdm/views/popup/findLecplnDtlForm.do?
+                        // opOrgid=2000000989&yy=2015&semCd=2&subjId=404410&dvclsNb=1&mlangCd=0001
+                        String opOrgid = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].opOrgid", false).getAttributeValue("value");
+                        String yy = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].yy", false).getAttributeValue("value");
+                        String semCd = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].semCd", false).getAttributeValue("value");
+                        String subjId = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].subjId", false).getAttributeValue("value");
+                        String dvclsNb = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].dvclsNb", false).getAttributeValue("value");
+                        String mlangCd = "0001"; // kr:0001, en:0002
+                        String abeekCd = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].abeekCd", false).getAttributeValue("value");
+                        String dsgnYn = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].dsgnYn", false).getAttributeValue("value");
+                        String deptLoctCd = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].deptLoctCd", false).getAttributeValue("value");
+                        String wkTkcrsOrgid = tds3.getFirstElement("name", "tmtblDscApl[" + (i - 1) + "].wkTkcrsOrgid", false).getAttributeValue("value");
+
+                        extraInfo.append("&opOrgid=").append(opOrgid);
+                        extraInfo.append("&yy=").append(yy);
+                        extraInfo.append("&semCd=").append(semCd);
+                        extraInfo.append("&subjId=").append(subjId);
+                        extraInfo.append("&dvclsNb=").append(dvclsNb);
+                        extraInfo.append("&mlangCd=").append(mlangCd);
+                        extraInfo.append("&abeekCd=").append(abeekCd);
+                        extraInfo.append("&dsgnYn=").append(dsgnYn);
+                        extraInfo.append("&deptLoctCd=").append(deptLoctCd);
+                        extraInfo.append("&wkTkcrsOrgid=").append(wkTkcrsOrgid);
+
+                    } catch (NullPointerException e) {
+                        Log.e(Debug.D + "Parse", "extraInfo parse error.", e);
+                    }
 
                     // .replaceAll("<(/)?([a-zA-Z]*)(\\s[a-zA-Z]*=[^>]*)?(\\s)*(/)?>",
                     // ""); // 과목명
@@ -278,7 +312,7 @@ public class Parse {
                     String professor = tds.get(6).getTextExtractor().toString(); // 교강사
 
                     DKClass dk = new DKClass(code, _class, lecture, timeRoom,
-                            professor, "");
+                            professor, "", extraInfo.toString());
                     list.add(dk);
 
                     Log.d(Debug.D + "Parse", "lecture. [" + dk.toString() + "]");
@@ -356,7 +390,7 @@ public class Parse {
                 String timeRoom = tds.get(1).getTextExtractor().toString();
 
                 DKClass dk = new DKClass(code, _class, lecture, timeRoom,
-                        professor, "");
+                        professor, "", "");
                 list.add(dk);
 
                 Log.d(Debug.D + "Parse", "lecture. [" + dk.toString() + "]");

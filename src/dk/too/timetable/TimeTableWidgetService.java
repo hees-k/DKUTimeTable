@@ -100,12 +100,6 @@ class TimeTableRemoteViewsFactory implements
         rv.setTextViewText(R.id.lecture, p.getLecture());
 
         // 클릭시 시간표 화면 띄운다.
-//        Intent clickIntent = new Intent(mContext, MyTimeTable.class);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0,
-//                clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-//
-//        rv.setOnClickPendingIntent(R.id.lecture, pendingIntent);
-        
         Intent fillInIntent = new Intent();
         rv.setOnClickFillInIntent(R.id.list_item_container, fillInIntent);
 
