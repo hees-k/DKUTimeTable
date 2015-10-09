@@ -79,12 +79,13 @@ public class MyAppwidgetProvider extends AppWidgetProvider {
         // 10분마다 불린다.
         if (UPDATE_WIDGET.equals(intent.getAction())) {
 
-            AppWidgetManager man = AppWidgetManager.getInstance(context);
-            int[] ids = man.getAppWidgetIds(new ComponentName(context,
+            AppWidgetManager am = AppWidgetManager.getInstance(context);
+            int[] ids = am.getAppWidgetIds(new ComponentName(context,
                     MyAppwidgetProvider.class));
 
             for (int appWidgetId : ids) {
-                update(context, appWidgetId, man);
+//                update(context, appWidgetId, man);
+                am.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list_view);
             }
         }
     }
@@ -96,6 +97,9 @@ public class MyAppwidgetProvider extends AppWidgetProvider {
         // Add the app widget ID to the intent extras.
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+//        intent.setData(Uri.fromParts("content", String.valueOf(appWidgetId), null));
+        
+        
         // Instantiate the RemoteViews object for the app widget layout.
         RemoteViews rv = new RemoteViews(context.getPackageName(),
                 R.layout.widget_layout);
@@ -114,12 +118,13 @@ public class MyAppwidgetProvider extends AppWidgetProvider {
         // 클릭시 시간표 화면 띄운다.
         Intent clickIntent = new Intent(context, MyTimeTable.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
-                clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                clickIntent, Intent.FILL_IN_COMPONENT);
 
 //        rv.setOnClickPendingIntent(R.id.widget, pendingIntent);
         rv.setPendingIntentTemplate(R.id.list_view, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, rv);
+//        appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetId, viewId);
     }
 
 }

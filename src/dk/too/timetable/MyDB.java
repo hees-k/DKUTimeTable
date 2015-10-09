@@ -133,7 +133,7 @@ public class MyDB {
     public void updateMemo(String memo, String code) {
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.execSQL("update subject set memo='" + memo + "' where _id = '" + code + "'");
+        db.execSQL("update subject set memo=? where _id = ?", new String[]{memo, code});
         if (db != null)
             db.close();
 

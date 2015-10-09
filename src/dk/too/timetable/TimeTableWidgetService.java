@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 import dk.too.timetable.DKClass.PartialTime;
@@ -32,7 +32,8 @@ class TimeTableRemoteViewsFactory implements
         mContext = context;
         mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
-
+//        mAppWidgetId = Integer.valueOf(intent.getData().getSchemeSpecificPart());
+        
         db = new MyDB(context);
         db.open();
     }
@@ -45,6 +46,10 @@ class TimeTableRemoteViewsFactory implements
         // or getViewAt(). Taking more than 20 seconds in this call will result
         // in an ANR.
 
+        loadData();
+    }
+
+    private void loadData() {
         // 오늘 현재 시간 이후의 수업만
         List<DKClass> list = db.DBselect();
 
@@ -70,6 +75,7 @@ class TimeTableRemoteViewsFactory implements
             }
         });
 
+        Log.d(Debug.D + "TimeTableWidgetService", "loadData");
     }
 
     public void onDestroy() {
@@ -138,5 +144,8 @@ class TimeTableRemoteViewsFactory implements
         // in its current state while work is being done here, so you don't need
         // to worry about
         // locking up the widget.
+        
+        mWidgetItems.clear();
+        loadData();
     }
 }
