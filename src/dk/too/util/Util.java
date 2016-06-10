@@ -5,7 +5,6 @@ import android.os.Environment;
 import dk.too.timetable.App;
 
 public class Util {
-
     
     public static String getExtPath(){
         
