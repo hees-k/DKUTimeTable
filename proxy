@@ -1,0 +1,21 @@
+function FindProxyForURL(url, host) {
+
+         var rip = dnsResolve(host);
+
+         // for intranet
+         if (shExpMatch(host, "*.sec.samsung.net")) return "SOCKS 127.0.0.1:10000";
+
+	 // Gerrit
+         if (shExpMatch(host, "165.213.202.48")) return "SOCKS 127.0.0.1:10000";
+         if (shExpMatch(host, "165.213.202.173")) return "SOCKS 127.0.0.1:10000";
+
+         //if (isInNet(dnsResolve(host), "172.16.0.0", "255.240.0.0")) 
+         //        return "DIRECT";
+
+         if (isInNet(host, "10.252.0.0", "255.255.0.0")) { // for tizen binary server
+                 return "SOCKS 127.0.0.1:10000";
+         }
+  
+         return "DIRECT";
+}
+
