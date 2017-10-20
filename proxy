@@ -3,7 +3,7 @@ function FindProxyForURL(url, host) {
     var rip = dnsResolve(host);
     var myIp = myIpAddress();
  
-    if(isInNet(myIp, "192.168.0.0", "255.255.255.0")) {
+    //if(isInNet(myIp, "192.168.0.0", "255.255.255.0")) {
         // home
         // for intranet
         if (shExpMatch(host, "*.sec.samsung.net")) return "SOCKS 127.0.0.1:10000";
@@ -20,9 +20,9 @@ function FindProxyForURL(url, host) {
         }
 
         return "DIRECT";
-    }
-    else {
-	return "PROXY http://swp.sec.samsung.net:8088/samsungcs.pac; DIRECT";
-    }
+    //}
+    //else {
+//	return "PROXY http://swp.sec.samsung.net:8088/samsungcs.pac; DIRECT";
+  //  }
 }
 
