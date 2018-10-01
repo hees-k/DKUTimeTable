@@ -14,6 +14,7 @@ function FindProxyForURL(url, host) {
         if (shExpMatch(host, "165.213.202.173")) return "SOCKS 127.0.0.1:10000";
         
         if (shExpMatch(host, "10.252.241.43")) return "SOCKS 127.0.0.1:10000"; // quickbuild
+        if (shExpMatch(host, "10.252.241.176")) return "SOCKS 127.0.0.1:10000"; // quickbuild download
         if (shExpMatch(host, "10.252.245.190")) return "SOCKS 127.0.0.1:10000"; // quickbuild download
         
         // Perforce
