@@ -9,9 +9,12 @@ function FindProxyForURL(url, host) {
         if (shExpMatch(host, "*.sec.samsung.net")) return "SOCKS 127.0.0.1:10000";
         if (shExpMatch(host, "samsung.u-vis.com")) return "SOCKS 127.0.0.1:10000";
 
+        // web
+        if (shExpMatch(host, "10.253.242.91:8080")) return "SOCKS 127.0.0.1:10000";
+
         // Gerrit
-        if (shExpMatch(host, "165.213.202.48")) return "SOCKS 127.0.0.1:10000";
-        if (shExpMatch(host, "165.213.202.173")) return "SOCKS 127.0.0.1:10000";
+        // if (shExpMatch(host, "165.213.202.48")) return "SOCKS 127.0.0.1:10000";
+        // if (shExpMatch(host, "165.213.202.173")) return "SOCKS 127.0.0.1:10000";
         
         if (shExpMatch(host, "10.252.241.43")) return "SOCKS 127.0.0.1:10000"; // quickbuild
         if (shExpMatch(host, "10.252.241.176")) return "SOCKS 127.0.0.1:10000"; // quickbuild download
