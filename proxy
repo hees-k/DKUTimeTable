@@ -10,7 +10,7 @@ function FindProxyForURL(url, host) {
         if (shExpMatch(host, "samsung.u-vis.com")) return "SOCKS 127.0.0.1:10000";
 
         // web
-        if (shExpMatch(host, "10.253.242.91:8080")) return "SOCKS 127.0.0.1:10000";
+        if (shExpMatch(host, "http://10.253.242.91:8080/*")) return "SOCKS 127.0.0.1:10000";
 
         // Gerrit
         // if (shExpMatch(host, "165.213.202.48")) return "SOCKS 127.0.0.1:10000";
